@@ -28,7 +28,7 @@ def pre_imgs(img):
     hsvimg = color.rgb2hsv(img)
     hsvimg_norm = (hsvimg - img.mean())/img.std()
 
-    return img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm
+    return img.shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm
 
 #3 cues for bgr color based on superpixels
 def BGRCues(img_norm, superpixs):
@@ -90,20 +90,20 @@ def TextureCues(greyimg_norm, superpixs):
     return filtercues
 
 #4 cues for positionHSVCues(hsvimg_norm, superpixs)
-def PosCues(superpixs):
+def PosCues(superpixs, shape):
 
     num_suppix = len(superpixs)
     PosCues = np.zeros((num_suppix,4))
     for i in range(num_suppix):
-        PosCues[i,:2] = superpixs[i].centroid
-        PosCues[i,2:4] = superpixs[i].local_centroid
+        PosCues[i,:2] = (superpixs[i].centroid-0.5*shape)/shape
+        PosCues[i,2:4] = (superpixs[i].local_centroid-0.5*shape)/shape
 
     return PosCues
 
 if __name__ == '__main__':
 
     img = io.imread("small_test/1.jpg")
-    img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
+    shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
     superpixs = getsuperpixs(img)
     BGRCues(img_norm, superpixs)
     HSVCues(hsvimg_norm, superpixs)
