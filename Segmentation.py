@@ -1,7 +1,7 @@
 from skimage import io, color, morphology
 from skimage.future import graph
 import numpy as np
-import FunctionUnits as FU
+import FunctionUnits_sk as FU
 from skimage.segmentation import find_boundaries,mark_boundaries,slic
 from skimage.measure import regionprops
 from collections import Counter
