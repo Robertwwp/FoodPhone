@@ -8,31 +8,31 @@ from skimage.filters import gabor_kernel
 
 np.set_printoptions(threshold=np.inf)
 
+def imread(path):
+    img = io.imread(path)
+    return img
+
 #show image until esc
 def imshow(img):
-
     io.imshow(img)
     plt.show()
 
 #get superpixel regions
 def getsuperpixs(img):
-
     sliclabels = slic(img, compactness=10, n_segments=400)
     return regionprops(sliclabels)
 
 def pre_imgs(img):
-
     img_norm = (img - img.mean())/img.std()
     greyimg = color.rgb2grey(img)
     greyimg_norm = (greyimg-greyimg.mean())/greyimg.std()
     hsvimg = color.rgb2hsv(img)
     hsvimg_norm = (hsvimg - img.mean())/img.std()
 
-    return img.shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm
+    return np.array(img.shape[:2]), img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm
 
 #3 cues for bgr color based on superpixels
 def BGRCues(img_norm, superpixs):
-
     BGR = np.zeros((len(superpixs), 3))
     for i in range(len(superpixs)):
         BGR[i] = np.mean(img_norm[superpixs[i].coords])
@@ -41,7 +41,6 @@ def BGRCues(img_norm, superpixs):
 
 #3 cues for hsv color based on superpixs
 def HSVCues(hsvimg_norm, superpixs):
-
     HSV = np.zeros((len(superpixs), 3))
     for i in range(len(superpixs)):
         HSV[i] = np.mean(hsvimg_norm[superpixs[i].coords])
@@ -50,7 +49,6 @@ def HSVCues(hsvimg_norm, superpixs):
 
 #6 cues for 5 interv num_superpixal histogram with entropy + 4 cues for 3 interval histogram with entropy
 def HistCues(greyimg, superpixs):
-
     num_suppixs = len(superpixs)
     hist5 = np.zeros((num_suppixs,6))
     hist3 = np.zeros((num_suppixs,4))
@@ -68,7 +66,6 @@ def HistCues(greyimg, superpixs):
 
 #11 cues with 8 diections filter, one mean, one max, one median values
 def TextureCues(greyimg_norm, superpixs):
-
     kernels = []
     for theta in range(4):
         theta = theta / 4. * np.pi
@@ -91,7 +88,6 @@ def TextureCues(greyimg_norm, superpixs):
 
 #4 cues for positionHSVCues(hsvimg_norm, superpixs)
 def PosCues(superpixs, shape):
-
     num_suppix = len(superpixs)
     PosCues = np.zeros((num_suppix,4))
     for i in range(num_suppix):
@@ -100,13 +96,24 @@ def PosCues(superpixs, shape):
 
     return PosCues
 
+def multiappend(seq_features):
+    result = seq_features[0]
+    for feature in seq_features[1:]:
+        result = np.append(result, feature, axis=1)
+
+    return result
+
+def Getallcues(img):
+    shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
+    superpixs = getsuperpixs(img)
+    BGR, HSV, (Hist5, Hist3), Texture, Pos = (BGRCues(img_norm, superpixs),
+    HSVCues(hsvimg_norm, superpixs), HistCues(greyimg, superpixs),
+    TextureCues(greyimg_norm, superpixs), PosCues(superpixs, shape))
+
+    return multiappend([BGR, HSV, Hist5, Hist3, Texture, Pos])
+
 if __name__ == '__main__':
 
     img = io.imread("small_test/1.jpg")
-    shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
-    superpixs = getsuperpixs(img)
-    BGRCues(img_norm, superpixs)
-    HSVCues(hsvimg_norm, superpixs)
-    HistCues(greyimg, superpixs)
-    TextureCues(greyimg_norm, superpixs)
-    PosCues(superpixs)
+    features = Getallcues(img)
+    print(features.shape)
