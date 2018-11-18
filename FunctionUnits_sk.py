@@ -64,6 +64,7 @@ def HistCues(greyimg, superpixs):
 
     return hist5, hist3
 
+"""not working good, need better texture filter"""
 #11 cues with 8 diections filter, one mean, one max, one median values
 def TextureCues(greyimg_norm, superpixs):
     kernels = []
@@ -87,7 +88,7 @@ def TextureCues(greyimg_norm, superpixs):
 
     return filtercues
 
-#4 cues for positionHSVCues(hsvimg_norm, superpixs)
+#4 cues for positioncues
 def PosCues(superpixs, shape):
     num_suppix = len(superpixs)
     PosCues = np.zeros((num_suppix,4))
