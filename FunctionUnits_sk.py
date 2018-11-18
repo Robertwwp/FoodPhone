@@ -27,7 +27,7 @@ def pre_imgs(img):
     greyimg = color.rgb2grey(img)
     greyimg_norm = (greyimg-greyimg.mean())/greyimg.std()
     hsvimg = color.rgb2hsv(img)
-    hsvimg_norm = (hsvimg - img.mean())/img.std()
+    hsvimg_norm = (hsvimg-hsvimg.mean())/hsvimg.std()
 
     return np.array(img.shape[:2]), img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm
 
@@ -35,7 +35,7 @@ def pre_imgs(img):
 def BGRCues(img_norm, superpixs):
     BGR = np.zeros((len(superpixs), 3))
     for i in range(len(superpixs)):
-        BGR[i] = np.mean(img_norm[superpixs[i].coords])
+        BGR[i,:] = np.mean(img_norm[superpixs[i].coords[:,0],superpixs[i].coords[:,1]], axis=0)
 
     return BGR
 
@@ -43,7 +43,7 @@ def BGRCues(img_norm, superpixs):
 def HSVCues(hsvimg_norm, superpixs):
     HSV = np.zeros((len(superpixs), 3))
     for i in range(len(superpixs)):
-        HSV[i] = np.mean(hsvimg_norm[superpixs[i].coords])
+        HSV[i,:] = np.mean(hsvimg_norm[superpixs[i].coords[:,0],superpixs[i].coords[:,1]], axis=0)
 
     return HSV
 
@@ -54,7 +54,7 @@ def HistCues(greyimg, superpixs):
     hist3 = np.zeros((num_suppixs,4))
 
     for i in range(num_suppixs):
-        seg_img = img_as_float(greyimg[superpixs[i].coords])
+        seg_img = img_as_float(greyimg[[superpixs[i].coords[:,0],superpixs[i].coords[:,1]]])
         hist5[i][:5] = exposure.histogram(seg_img, nbins=5)[0]/superpixs[i].area
         hist3[i][:3] = exposure.histogram(seg_img, nbins=3)[0]/superpixs[i].area
         hist5[i][:5] = (hist5[i][:5]-hist5[i][:5].mean())/hist5[i][:5].std()
@@ -67,7 +67,7 @@ def HistCues(greyimg, superpixs):
 #11 cues with 8 diections filter, one mean, one max, one median values
 def TextureCues(greyimg_norm, superpixs):
     kernels = []
-    for theta in range(4):
+    for theta in (0,2,4,6):
         theta = theta / 4. * np.pi
         for frequency in (0.1, 0.4):
             kernel = gabor_kernel(frequency, theta=theta)
@@ -77,8 +77,9 @@ def TextureCues(greyimg_norm, superpixs):
     for k, kern in enumerate(kernels):
         fimg = np.sqrt(ndi.convolve(greyimg_norm, np.real(kernel), mode='wrap')**2 +
                    ndi.convolve(greyimg_norm, np.imag(kernel), mode='wrap')**2)
+        #imshow(fimg)
         for i in range(len(superpixs)):
-            filtercues[i][k]=np.mean(fimg[superpixs[i].coords])
+            filtercues[i][k]=np.mean(fimg[[superpixs[i].coords[:,0],superpixs[i].coords[:,1]]], axis=0)
 
     filtercues[:,8]=np.mean(filtercues[:,:8], axis=1)
     filtercues[:,9]=np.amax(filtercues[:,:8], axis=1)
@@ -103,12 +104,11 @@ def multiappend(seq_features):
 
     return result
 
-def Getallcues(img):
+def Getallcues(regions, img):
     shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
-    superpixs = getsuperpixs(img)
-    BGR, HSV, (Hist5, Hist3), Texture, Pos = (BGRCues(img_norm, superpixs),
-    HSVCues(hsvimg_norm, superpixs), HistCues(greyimg, superpixs),
-    TextureCues(greyimg_norm, superpixs), PosCues(superpixs, shape))
+    BGR, HSV, (Hist5, Hist3), Texture, Pos = (BGRCues(img_norm, regions),
+    HSVCues(hsvimg_norm, regions), HistCues(greyimg, regions),
+    TextureCues(greyimg_norm, regions), PosCues(regions, shape))
 
     return multiappend([BGR, HSV, Hist5, Hist3, Texture, Pos])
 
