@@ -64,7 +64,6 @@ def HistCues(greyimg, superpixs):
 
     return hist5, hist3
 
-"""not working good, need better texture filter"""
 #11 cues with 8 diections filter, one mean, one max, one median values
 def TextureCues(greyimg_norm, superpixs):
     kernels = []
@@ -76,9 +75,9 @@ def TextureCues(greyimg_norm, superpixs):
 
     filtercues = np.zeros((len(superpixs),11))
     for k, kern in enumerate(kernels):
-        fimg = np.sqrt(ndi.convolve(greyimg_norm, np.real(kernel), mode='wrap')**2 +
-                   ndi.convolve(greyimg_norm, np.imag(kernel), mode='wrap')**2)
-        #imshow(fimg)
+        fimg = np.sqrt(ndi.convolve(greyimg_norm, np.real(kern), mode='wrap')**2 +
+                   ndi.convolve(greyimg_norm, np.imag(kern), mode='wrap')**2)
+        imshow(fimg)
         for i in range(len(superpixs)):
             filtercues[i][k]=np.mean(fimg[[superpixs[i].coords[:,0],superpixs[i].coords[:,1]]], axis=0)
 
@@ -115,6 +114,7 @@ def Getallcues(regions, img):
 
 if __name__ == '__main__':
 
-    img = io.imread("small_test/1.jpg")
-    features = Getallcues(img)
+    img = imread("1.jpg")
+    regions = getsuperpixs(img)
+    features = Getallcues(regions, img)
     print(features.shape)
