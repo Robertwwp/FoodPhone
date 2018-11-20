@@ -106,7 +106,7 @@ def multiappend(seq_features):
 
     return result
 
-def Getallcues(regionss, img):
+def Getallcues(regions, img):
     shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
     BGR, HSV, (Hist5, Hist3), Texture, Pos = (BGRCues(img_norm, regionss),
     HSVCues(hsvimg_norm, regionss), HistCues(greyimg, regionss),
