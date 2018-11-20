@@ -108,9 +108,9 @@ def multiappend(seq_features):
 
 def Getallcues(regions, img):
     shape, img_norm, greyimg, greyimg_norm, hsvimg, hsvimg_norm = pre_imgs(img)
-    BGR, HSV, (Hist5, Hist3), Texture, Pos = (BGRCues(img_norm, regionss),
-    HSVCues(hsvimg_norm, regionss), HistCues(greyimg, regionss),
-    TextureCues(greyimg_norm, regionss), PosCues(regionss, shape))
+    BGR, HSV, (Hist5, Hist3), Texture, Pos = (BGRCues(img_norm, regions),
+    HSVCues(hsvimg_norm, regions), HistCues(greyimg, regions),
+    TextureCues(greyimg_norm, regions), PosCues(regions, shape))
 
     return multiappend([BGR, HSV, Hist5, Hist3, Texture, Pos])
 
