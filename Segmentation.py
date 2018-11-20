@@ -5,8 +5,9 @@ import FunctionUnits_sk as FU
 from skimage.segmentation import find_boundaries,mark_boundaries,slic
 from skimage.measure import regionprops
 from collections import Counter
+from sklearn.cluster import KMeans
 
-img = io.imread("small_test/6.jpg")
+img = io.imread("small_test/1.jpg")
 superpixs = slic(img, compactness=10, n_segments=400)
 g = graph.rag_mean_color(img, superpixs, mode='similarity')
 
@@ -28,4 +29,19 @@ for region in regions:
 
 out = color.label2rgb(labels, img, kind='avg')
 out = mark_boundaries(out, labels, (0, 0, 0))
+FU.imshow(out)
+
+regions = regionprops(labels)
+features = FU.Getallcues(regions, img)
+print(features)
+kmeans = KMeans(n_clusters=2, random_state=0).fit(features)
+for i in range(len(kmeans.labels_)):
+    if kmeans.labels_[i] == 1:
+        for coord in regions[i].coords:
+            labels[coord[0], coord[1]] = 1
+    else:
+        for coord in regions[i].coords:
+            labels[coord[0], coord[1]] = 0
+
+out = color.label2rgb(labels, img, kind='avg')
 FU.imshow(out)
