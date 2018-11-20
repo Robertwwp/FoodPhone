@@ -20,7 +20,7 @@ def imshow(img):
 #get superpixel regionss
 def getsuperpixs(img):
     sliclabels = slic(img, compactness=10, n_segments=400)
-    return regionsprops(sliclabels)
+    return regionprops(sliclabels)
 
 def pre_imgs(img):
     img_norm = (img - img.mean())/255.0
