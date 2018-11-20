@@ -18,7 +18,7 @@ def imshow(img):
     plt.show()
 
 #get superpixel regionss
-def getregions(img):
+def getsuperpixs(img):
     sliclabels = slic(img, compactness=10, n_segments=400)
     return regionsprops(sliclabels)
 
