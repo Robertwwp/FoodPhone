@@ -58,21 +58,21 @@ def HistCues(greyimg, superpixs):
         seg_img = img_as_float(greyimg[[superpixs[i].coords[:,0],superpixs[i].coords[:,1]]])
         hist5[i][:] = exposure.histogram(seg_img, nbins=5)[0]/superpixs[i].area
         hist3[i][:] = exposure.histogram(seg_img, nbins=3)[0]/superpixs[i].area
-        hist5[i][:] = (hist5[i][:]-hist5[i][:].mean())
-        hist3[i][:] = (hist3[i][:]-hist3[i][:].mean())
+        hist5[i][:] = hist5[i][:]-hist5[i][:].mean()
+        hist3[i][:] = hist3[i][:]-hist3[i][:].mean()
 
     return hist5, hist3
 
-#11 cues with 8 diections filter, one mean, one max, one median values
+#15 cues with 6 diections x 2 frequencies filter, one mean, one max, one median values
 def TextureCues(greyimg_norm, superpixs):
     kernels = []
-    for theta in (0,2,4,6):
-        theta = theta / 4. * np.pi
+    for theta in range(6):
+        theta = theta / 6. * np.pi
         for frequency in (0.1, 0.4):
             kernel = gabor_kernel(frequency, theta=theta)
             kernels.append(kernel)
 
-    filtercues = np.zeros((len(superpixs),11))
+    filtercues = np.zeros((len(superpixs),15))
     for k, kern in enumerate(kernels):
         fimg = np.sqrt(ndi.convolve(greyimg_norm, np.real(kern), mode='wrap')**2 +
                    ndi.convolve(greyimg_norm, np.imag(kern), mode='wrap')**2)
@@ -80,19 +80,22 @@ def TextureCues(greyimg_norm, superpixs):
         for i in range(len(superpixs)):
             filtercues[i][k]=np.mean(fimg[[superpixs[i].coords[:,0],superpixs[i].coords[:,1]]], axis=0)
 
-    filtercues[:,8]=np.mean(filtercues[:,:8], axis=1)
-    filtercues[:,9]=np.amax(filtercues[:,:8], axis=1)
-    filtercues[:,10]=filtercues[:,9]-np.median(filtercues[:,:8], axis=1)
+    filtercues[:,12]=np.mean(filtercues[:,:12], axis=1)
+    filtercues[:,13]=np.amax(filtercues[:,:12], axis=1)
+    filtercues[:,14]=filtercues[:,13]-np.median(filtercues[:,:12], axis=1)
 
-    return filtercues*10
+    return filtercues*5
 
-#4 cues for positioncues
+#10 cues for positioncues
 def PosCues(superpixs, shape):
     num_suppix = len(superpixs)
-    PosCues = np.zeros((num_suppix,4))
+    PosCues = np.zeros((num_suppix,10))
     for i in range(num_suppix):
         PosCues[i,:2] = (superpixs[i].centroid-0.5*shape)/shape
         PosCues[i,2:4] = (superpixs[i].local_centroid-0.5*shape)/shape
+        PosCues[i,4:6] = (superpixs[i].coords[int(0.1*len(superpixs[i].coords))]-0.5*shape)/shape
+        PosCues[i,6:8] = (superpixs[i].coords[int(0.5*len(superpixs[i].coords))]-0.5*shape)/shape
+        PosCues[i,8:10] = (superpixs[i].coords[int(0.9*len(superpixs[i].coords))]-0.5*shape)/shape
 
     return PosCues
 
@@ -113,6 +116,6 @@ def Getallcues(regions, img):
 
 if __name__ == '__main__':
 
-    img = io.imread("small_test/1.jpg")
+    img = io.imread("1.jpg")
     features = Getallcues(img)
     print(features.shape)
