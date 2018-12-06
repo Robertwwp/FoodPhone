@@ -40,7 +40,7 @@ for file in files[num_files_existed:]:
         prob = FU.Getprobsclassifier(regions, img)
         p_new = np.array(sorted([pr for pr in prob if pr!=0]))
         if (len(p_new)>1):
-            #threshold = p_new[np.argmax(p_new[1:]-p_new[0:-1])+1]
+            #threshold = p_new[np.argmax(p_new[1:]-p_new[0:-1])+1]  #for train images, more aggressive
             threshold = (p_new.max() + p_new.mean())/2.0
         else:
             threshold=1.1
