@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 def BGRCues_img(img):
-    return np.mean(img,axis=(0,1))/255.0
+    return np.mean(img,axis=(0,1))
 
 def HSVCues_img(img):
     hsvimg = color.rgb2hsv(img)
