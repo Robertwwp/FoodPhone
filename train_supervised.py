@@ -1,6 +1,5 @@
 import os
 from skimage import io,color,exposure,img_as_ubyte
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn import linear_model
 from sklearn.externals import joblib
@@ -13,36 +12,10 @@ labels = np.append(np.ones(2*len(folders)), np.zeros(2*len(folders)))
 traindata = np.zeros((len(labels),10))
 
 for i, folder in enumerate(folders):
+
+    #get the labeled Supervised Learning Model and the corresponding mask
     files = os.listdir("Supervised/food_pics/food_pics/"+folder)
     files_src = os.listdir("Supervised/food_pics/food_pics_source/"+folder)
-    """if files[0][-3:] == "png":
-        print("SS")
-        file_copy = files[0][:-3] + "jpg"
-        im = Image.open("Supervised/food_pics/food_pics/"+folder+"/"+files[0])
-        rgb = im.convert('RGB')
-        os.remove("Supervised/food_pics/food_pics/"+folder+"/"+files[0])
-        rgb.save("Supervised/food_pics/food_pics/"+folder+"/"+file_copy)
-    if files[1][-3:] == "png":
-        print("SS")
-        file_copy = files[1][:-3] + "jpg"
-        im = Image.open("Supervised/food_pics/food_pics/"+folder+"/"+files[1])
-        rgb = im.convert('RGB')
-        os.remove("Supervised/food_pics/food_pics/"+folder+"/"+files[1])
-        rgb.save("Supervised/food_pics/food_pics/"+folder+"/"+file_copy)
-    if files_src[0][-3:] == "png":
-        print("SS")
-        file_copy = files_src[0][:-3] + "jpg"
-        im = Image.open("Supervised/food_pics/food_pics_source/"+folder+"/"+files_src[0])
-        rgb = im.convert('RGB')
-        os.remove("Supervised/food_pics/food_pics_source/"+folder+"/"+files_src[0])
-        rgb.save("Supervised/food_pics/food_pics_source/"+folder+"/"+file_copy)
-    if files_src[1][-3:] == "png":
-        print("SS")
-        file_copy = files_src[1][:-3] + "jpg"
-        im = Image.open("Supervised/food_pics/food_pics_source/"+folder+"/"+files_src[1])
-        rgb = im.convert('RGB')
-        os.remove("Supervised/food_pics/food_pics_source/"+folder+"/"+files_src[1])
-        rgb.save("Supervised/food_pics/food_pics_source/"+folder+"/"+file_copy)"""
 
     img1 = io.imread("Supervised/food_pics/food_pics/"+folder+"/"+files[0])
     img2 = io.imread("Supervised/food_pics/food_pics/"+folder+"/"+files[1])
@@ -54,7 +27,7 @@ for i, folder in enumerate(folders):
         img_copy = img2_src.copy()
         img2_src = img1_src
         img1_src = img_copy
-    print(folder)
+
     img1_r1, img1_r2 = np.extract(cond1, img1_src), np.extract(np.invert(cond1), img1_src)
     img2_r1, img2_r2 = np.extract(cond2, img2_src), np.extract(np.invert(cond2), img2_src)
     greyimg1, greyimg2 = color.rgb2grey(img1_src), color.rgb2grey(img2_src)
@@ -64,6 +37,7 @@ for i, folder in enumerate(folders):
     hsvimg1_r1, hsvimg1_r2 = np.extract(cond1, hsvimg1), np.extract(np.invert(cond1), hsvimg1)
     hsvimg2_r1, hsvimg2_r2 = np.extract(cond2, hsvimg2), np.extract(np.invert(cond2), hsvimg2)
 
+    #extract the rgb, hsv, histogram and position features to train the model
     traindata[i,:3], traindata[-i-1,:3] = np.mean(img1_r1,axis=0)/255, np.mean(img1_r2,axis=0)/255
     traindata[i+1,:3], traindata[-i-2,:3] = np.mean(img2_r1,axis=0)/255, np.mean(img2_r2,axis=0)/255
     traindata[i,3:6], traindata[-i-1,3:6] = np.mean(hsvimg1_r1,axis=0), np.mean(hsvimg1_r2,axis=0)
@@ -84,6 +58,7 @@ for i, folder in enumerate(folders):
     print(traindata[-i-1,:])
     print(traindata[-i-2,:])
 
+#use a SGDCClassifier
 clf = linear_model.SGDClassifier()
 clf_cali=CalibratedClassifierCV(clf, cv=3, method='sigmoid')
 clf_cali.fit(traindata, labels)
