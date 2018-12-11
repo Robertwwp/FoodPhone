@@ -7,13 +7,12 @@ from skimage.segmentation import mark_boundaries,slic
 from skimage.measure import regionprops
 from collections import Counter
 
+# apply normalized cut on the images, set a threshold, and keep the food part of the image
 files = os.listdir("test_images")
-files_existed = os.listdir("test_images_cut")
-num_files, num_files_existed = len(files), len(files_existed)
 #print(num_files, num_files_existed, files[num_files_existed-1], files_existed[-1])
 flag = 0
 start = time.time()
-for file in files[num_files_existed:]:
+for file in files[]:
     img = io.imread("test_images/"+file)
     try:
         superpixs = slic(img, compactness=10, n_segments=380)
@@ -22,6 +21,7 @@ for file in files[num_files_existed:]:
         g = graph.rag_mean_color(img, superpixs, mode='similarity')
         labels = graph.cut_normalized(superpixs, g) + 1
         regions = regionprops(labels)
+        #remove samll regions
         for region in regions:
             if region.area < 10000:
                 minr, minc, maxr, maxc = region.bbox
@@ -35,6 +35,7 @@ for file in files[num_files_existed:]:
                 newlabel = Counter(outer).most_common(1)[0][0]
                 labels[[x[0] for x in region.coords], [x[1] for x in region.coords]] = newlabel
 
+        #thresholding
         regions = regionprops(labels)
 
         prob = FU.Getprobsclassifier(regions, img)
@@ -62,10 +63,3 @@ for file in files[num_files_existed:]:
     except:
         io.imsave("test_images_cut/"+file, img)
         print(file)
-
-
-"""out = color.label2rgb(labels, img, kind='avg')
-out = mark_boundaries(out, labels, (0, 0, 0))
-FU.imshow(out)
-#img[[x[0] for x in regions[4].coords], [x[1] for x in regions[4].coords]] = (0,0,0)
-FU.imshow(img)"""
