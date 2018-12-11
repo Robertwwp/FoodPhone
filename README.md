@@ -6,7 +6,7 @@ link to processed test_images: https://drive.google.com/open?id=1TTYkeoKU8R1P-te
 
 link to supervised training source_images: https://drive.google.com/file/d/1lwIqZnzcY9zy-Uc1iz6zRBDqWUF2pwup/view?usp=sharing
 
-===============================================file index=====================================================
+================file index================
 
 FunctionUnits_sk.py:
   Some useful functions in skimage
