@@ -16,13 +16,13 @@ link to supervised training source_images: https://drive.google.com/file/d/1lwIq
   
 <clf.pkl> Trained model for identify food regions in an image (training set is 200 labeled images with link above)
  
-<finaltrain.py> Code to train the final svm classifier
+<finaltrain.py> The code to train the final svm classifier
   
 <finaltest.py> Test the classifier on the test image
  
 <train_final.npy> Numpy array storing all the samples with their features
  
-<labels_final.npy> Numpy array stroing the corresponding labels of the samples
+<labels_final.npy> Numpy array storing the corresponding labels of the samples
  
  
   
