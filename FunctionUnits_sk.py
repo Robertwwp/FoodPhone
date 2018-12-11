@@ -73,48 +73,22 @@ def descs(greyimg):
 
     return np.mean(descs.reshape(descs_num, descs.shape[2]), axis=0)
 
-def GLCM(regions, greyimg):
+def GLCM(greyimg):
+    coords = np.argwhere(greyimg != 0)
+    glcm = np.zeros((9,16))
     greyimg = img_as_ubyte(greyimg)
-    num_regions = len(regions)
-    glcm = np.zeros((num_regions, 8))
-    for i, region in enumerate(regions):
-        x, y = int(region.centroid[0]), int(region.centroid[1])
+    for i in range(1,10):
+        x, y = coords[int(0.1*i*len(coords))]
         if x < 10:
             x = 10
         if y < 10:
             y = 10
         image = greyimg[x-10:x+11,y-10:y+11]
         matrix = greycomatrix(image,[1,2],[0,np.pi/4,np.pi/2,3*np.pi/4],levels=256,normed=True)
-        glcm[i,:] = greycoprops(matrix, 'energy').ravel()
+        glcm[i-1,:8] = greycoprops(matrix, 'dissimilarity').ravel()
+        glcm[i-1,8:16] = greycoprops(matrix, 'correlation').ravel()
 
-    return glcm
-
-#2 cues for positioncues
-def PosCues(regions, shape):
-    num_suppix = len(regions)
-    PosCues = np.zeros((num_suppix,2))
-    var1, var2 = (np.arange(shape[0])/shape[0]).var(), (np.arange(shape[1])/shape[1]).var()
-    for i in range(num_suppix):
-        PosCues[i,0] = (regions[i].centroid[0])/shape[0]-0.5
-        PosCues[i,1] = (regions[i].centroid[1])/shape[1]-0.5
-
-    PosCues[:,0] = np.exp(-PosCues[:,0]**2/(2*var1))/(np.sqrt(2*np.pi*var1))
-    PosCues[:,1] = np.exp(-PosCues[:,1]**2/(2*var2))/(np.sqrt(2*np.pi*var2))
-    PosCues[:,0] = PosCues[:,0]/np.max(PosCues[:,0])
-    PosCues[:,1] = PosCues[:,1]/np.max(PosCues[:,1])
-
-    return PosCues
-#####################################################################################
-def seg_kmeans(img):
-    regions, labels = getsuperpixs(img, 10, 400)
-    features = Getpartcues(regions, img)
-    #print(features)
-    kmeans = KMeans(n_clusters=2, random_state=0).fit(features)
-    for i in range(len(kmeans.labels_)):
-        labels[[regions[i].coords[:,0],regions[i].coords[:,1]]] = kmeans.labels_[i] + 1
-
-    return regionprops(labels)
-#####################################################################################
+    return np.mean(glcm,axis=0)
 
 def multiappend(seq_features, ax):
     result = seq_features[0]
