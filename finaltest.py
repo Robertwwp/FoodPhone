@@ -4,6 +4,8 @@ from sklearn.externals import joblib
 import numpy as np
 from skimage.feature import hog, greycomatrix, greycoprops
 
+#extract features from test image and use the trained model to assign a label to the test image
+
 def BGRCues_img(img):
     if np.max(img) <= 1:
         return np.sum(img,axis=(0,1))/area
@@ -39,12 +41,6 @@ def GLCM(greyimg):
 
     return np.mean(glcm,axis=0)/50
 
-def HoG(img):
-    fd = hog(img, orientations=8, pixels_per_cell=(32, 32),
-             cells_per_block=(1, 1), feature_vector=True, multichannel=True)
-
-    return fd
-
 def multiappend(seq_features):
     result = seq_features[0]
     for feature in seq_features[1:]:
@@ -55,9 +51,8 @@ def multiappend(seq_features):
 
 if __name__ == '__main__':
     alltypes = open("classes.txt").read().splitlines()
-    #clf = joblib.load('clf_final.pkl')
-    #print(clf)
-    clf = joblib.load('neigh_final.pkl')
+    clf = joblib.load('clf_final.pkl')
+    print(clf)
     img = io.imread("t4.jpg")
     if img.shape != (512,512,3):
         img = resize(img, (512,512,3))
@@ -65,6 +60,4 @@ if __name__ == '__main__':
     area = np.count_nonzero(greyimg)
     BGR,HSV,(Hist5,Hist3),glcm= BGRCues_img(img),HSVCues_img(img),HistCues_img(greyimg,area),GLCM(greyimg)
     test = multiappend([BGR, HSV, Hist5, Hist3, glcm])
-    print(test)
-    print(clf.predict(test.reshape(-1, len(test))))
     print(alltypes[int(clf.predict(test.reshape(-1, len(test))))])
