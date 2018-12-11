@@ -5,6 +5,8 @@ from skimage.feature import hog, greycomatrix, greycoprops
 import numpy as np
 import time
 
+# feature extraction of the training images
+# RGB, HSV, Histogram and glcm dissimilarity plus correlation textures
 def BGRCues_img(img, area):
     if np.max(img) <= 1:
         return np.sum(img,axis=(0,1))/area
@@ -22,12 +24,6 @@ def HistCues_img(greyimg, area):
     hist3 = exposure.histogram(image, nbins=3)[0]/area
 
     return hist5, hist3
-
-def HoG(img):
-    fd = hog(img, orientations=8, pixels_per_cell=(32, 32),
-             cells_per_block=(1, 1), feature_vector=True, multichannel=True)
-
-    return fd
 
 def GLCM(greyimg):
     coords = np.argwhere(greyimg != 0)
@@ -102,6 +98,7 @@ if __name__ == '__main__':
             np.save("train_glcm", train)
             np.save("labels_glcm", labels)
 
+    # save the training data into files
     print("valid image processed:")
     print(count)
     print("time spent (min):")
