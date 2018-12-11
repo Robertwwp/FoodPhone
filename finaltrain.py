@@ -1,12 +1,13 @@
 from sklearn.externals import joblib
-from sklearn.svm import SVR
+from sklearn.svm import LinearSVC
 import numpy as np
 from collections import Counter
 
-#4667 useless
-traindata = np.load("train.npy")[:-4667]
-labels = np.load("labels.npy")[:-4667]
+traindata = np.load("train_final.npy")
+labels = np.load("labels_final.npy")
 
-clf = SVR(gamma='scale', C=1.0, epsilon=0.2)
+# using a linearSVC model with a squared hinge loss function
+clf = LinearSVC(random_state=0, tol=1e-5, max_iter=20000)
 clf.fit(traindata, labels)
 joblib.dump(clf, 'clf_final.pkl')
+
